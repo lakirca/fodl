@@ -1,0 +1,15 @@
+@import '../../../../styles/colors';
+@import '../../../../styles/variables';
+
+.app-enter-position-form {
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-top-color: $border-color-light;
+
+    &__spinner {
+        width: 3 * $spacer !important;
+        height: 3 * $spacer !important;
+        overflow: visible;
+        transform: scale(0.2)
+    }
+}

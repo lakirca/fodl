@@ -1,0 +1,67 @@
+<div class="has-tooltip flex items-center cursor-pointer">
+    <img src="/assets/tvl.svg" class="inline w-5 mr-2" />
+
+    <div *ngIf="!tvl" class="inline-block mx-4">
+        <mat-progress-spinner
+            color="accent"
+            mode="indeterminate"
+            diameter="14"
+        ></mat-progress-spinner>
+    </div>
+
+    <ng-container *ngIf="tvl">
+        {{ getTotalTvl() | formatValue: '$' }}M
+
+        <div class="tooltip below-left !mt-3">
+            <div *ngFor="let platform of tvl" class="flex w-80">
+                <div class="w-42 font-bold">{{ platform.platform.name }}:</div>
+
+                <div class="flex-1 text-right">
+                    {{ platform.total | formatValue: '$' }}
+                </div>
+            </div>
+
+            <div class="flex w-80">
+                <div class="w-42">Total:</div>
+
+                <div class="flex-1 text-right font-bold">
+                    {{ getPlatformTvlAggregated() | formatValue: '$' }}
+                </div>
+            </div>
+
+            <ng-container *ngIf="lps.length">
+                <hr class="my-4 opacity-25" />
+
+                <div *ngFor="let lp of lps" class="flex w-80">
+                    <div class="w-42 font-bold">
+                        Sushi LP ({{ lp.lp.name }}):
+                    </div>
+
+                    <div class="flex-1 text-right">
+                        {{ lp.tvl | formatValue: '$' }}
+                    </div>
+                </div>
+
+                <div class="flex w-80">
+                    <div class="w-42">Total:</div>
+
+                    <div class="flex-1 text-right font-bold">
+                        {{ getLpTvlAggregated() | formatValue: '$' }}
+                    </div>
+                </div>
+            </ng-container>
+
+            <ng-container *ngIf="stakingTvl">
+                <hr class="my-4 opacity-25" />
+
+                <div class="flex w-80">
+                    <div class="w-42 font-bold">xFODL:</div>
+
+                    <div class="flex-1 text-right font-bold">
+                        {{ stakingTvl | formatValue: '$' }}
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </ng-container>
+</div>

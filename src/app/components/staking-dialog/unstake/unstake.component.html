@@ -1,0 +1,50 @@
+<div class="app-input flex relative my-4">
+    <input
+        type="number"
+        name="unstakeAmount"
+        class="py-2"
+        placeholder="Enter Amount"
+        [(ngModel)]="unstakeAmount"
+        (ngModelChange)="limitMaxAmount()"
+    />
+
+    <small class="absolute left-0 -top-6"
+        >Rewards: {{ rewards | formatValue: 'FODL' }}</small
+    >
+
+    <small class="cursor-pointer absolute right-0 -top-6" (click)="setMax()"
+        >Staked: {{ balance | formatValue }}</small
+    >
+</div>
+
+<div class="flex justify-between">
+    <button
+        *ngIf="ethereumService.account$ | async"
+        [disabled]="!unstakeAmount"
+        mat-button
+        class="secondary w-32"
+        (click)="unstake()"
+    >
+        Unstake
+    </button>
+
+    <button
+        *ngIf="ethereumService.account$ | async"
+        [disabled]="!rewards || rewards === 0"
+        mat-button
+        class="secondary w-32"
+        (click)="claim()"
+    >
+        Claim Rewards
+    </button>
+
+    <button
+        *ngIf="ethereumService.account$ | async"
+        [disabled]="!unstakeAmount"
+        mat-button
+        class="secondary w-32"
+        (click)="exit()"
+    >
+        Exit
+    </button>
+</div>

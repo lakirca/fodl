@@ -1,0 +1,17 @@
+@import './variables';
+
+.h-192 {
+    height: 48 * $spacer;
+}
+
+.h-288 {
+    height: 72 * $spacer;
+}
+
+.h-384 {
+    height: 96 * $spacer;
+}
+
+.min-h-78 {
+    min-height: 78%;
+}

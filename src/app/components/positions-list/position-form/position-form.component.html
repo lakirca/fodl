@@ -1,0 +1,285 @@
+<div class="app-position-form">
+    <div
+        *ngIf="position.positionValueUsd > 5"
+        class="flex mt-4 pt-4 px-4 max-h-96"
+    >
+        <div class="w-1/3 text-center px-12">
+            <span class="block font-bold">Position Details</span>
+
+            <div class="flex items-center my-4">
+                <div class="w-1/3 text-left">Supply:</div>
+
+                <div class="w-2/3 flex items-center justify-center">
+                    <app-icon-asset
+                        class="inline-block w-8"
+                        [asset]="position.supplyTokenAddress"
+                    ></app-icon-asset>
+
+                    <span class="w-20 text-xl font-extralight">{{
+                        position.supplyTokenAddress | assetSymbol
+                    }}</span>
+
+                    <div class="flex flex-col w-20">
+                        <span class="font-thin text-lg">
+                            {{
+                                supplyAmount
+                                    | formatValue
+                                        : (position.supplyTokenAddress
+                                              | assetSymbol)
+                            }}
+                        </span>
+
+                        <small class="font-bold text-xs"
+                            >~{{
+                                marketsService.getValueUSD(
+                                    supplyAmount,
+                                    position.supplyTokenAddress,
+                                    position.platformAddress
+                                ) | formatValue: '$'
+                            }}</small
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center my-4">
+                <div class="w-1/3 text-left">Borrow:</div>
+
+                <div class="w-2/3 flex items-center justify-center">
+                    <app-icon-asset
+                        class="inline-block w-8"
+                        [asset]="position.borrowTokenAddress"
+                    ></app-icon-asset>
+
+                    <span class="w-20 text-xl font-extralight">{{
+                        position.borrowTokenAddress | assetSymbol
+                    }}</span>
+
+                    <div class="flex flex-col w-20">
+                        <span class="font-thin text-lg">
+                            {{
+                                borrowAmount
+                                    | formatValue
+                                        : (position.borrowTokenAddress
+                                              | assetSymbol)
+                            }}
+                        </span>
+
+                        <small class="font-bold text-xs"
+                            >~{{
+                                marketsService.getValueUSD(
+                                    borrowAmount,
+                                    position.borrowTokenAddress,
+                                    position.platformAddress
+                                ) | formatValue: '$'
+                            }}</small
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center my-4">
+                <div class="w-1/3 text-left">APR:</div>
+
+                <div
+                    class="
+                        w-2/3
+                        ml-4
+                        flex
+                        items-center
+                        justify-start
+                        text-2xl
+                        font-extralight
+                        has-tooltip
+                        cursor-pointer
+                    "
+                >
+                    {{ apr | formatValue }}%
+
+                    <div *ngIf="position.foldingMarket" class="tooltip">
+                        <app-apr-tooltip
+                            [foldingMarket]="position.foldingMarket"
+                            [leverage]="leverage"
+                        ></app-apr-tooltip>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center my-4">
+                <div class="w-1/3 text-left">Borrow Limit:</div>
+
+                <div
+                    class="
+                        w-2/3
+                        ml-4
+                        flex
+                        items-center
+                        justify-start
+                        text-2xl
+                        font-extralight
+                    "
+                    [class.text-red-400]="
+                        stopLossCollateralUsageLimit > 0 &&
+                        borrowLimit > stopLossCollateralUsageLimit
+                    "
+                >
+                    {{ borrowLimit | formatValue }}%
+                </div>
+            </div>
+
+            <div
+                *ngIf="stopLossCollateralUsageLimit > 0"
+                class="flex items-center"
+            >
+                <div class="w-1/3 text-left">Stop Loss CUL:</div>
+
+                <div
+                    class="
+                        w-2/3
+                        ml-4
+                        flex
+                        items-center
+                        justify-start
+                        text-2xl
+                        font-extralight
+                    "
+                >
+                    {{ stopLossCollateralUsageLimit | formatValue }}%
+                </div>
+            </div>
+        </div>
+
+        <div class="w-1/3 text-center px-12">
+            <span class="block font-bold mb-4">Change Position Value</span>
+
+            <div class="flex items-center justify-center mt-8 mb-10">
+                <app-icon-asset
+                    class="inline-block w-8"
+                    [asset]="position.supplyTokenAddress"
+                ></app-icon-asset>
+
+                <span class="ml-4 text-xl font-extralight">{{
+                    position.supplyTokenAddress | assetSymbol
+                }}</span>
+            </div>
+
+            <div class="app-input flex relative items-center">
+                <button
+                    mat-button
+                    class="primary small"
+                    (click)="modifyDelta(-100)"
+                >
+                    -
+                </button>
+
+                <input
+                    type="number"
+                    name="delta"
+                    class="py-2"
+                    [(ngModel)]="delta"
+                    (ngModelChange)="simulate()"
+                />
+
+                <button
+                    mat-button
+                    class="primary small"
+                    (click)="modifyDelta(100)"
+                >
+                    +
+                </button>
+            </div>
+
+            <small class="inline-block mt-2"
+                >~{{
+                    marketsService.getValueUSD(
+                        delta,
+                        position.supplyTokenAddress,
+                        position.platformAddress
+                    ) | formatValue: '$'
+                }}</small
+            >
+
+            <div class="block mt-12">
+                <button
+                    mat-button
+                    class="secondary"
+                    [disabled]="disableChangePositionValue()"
+                    (click)="changePositionValue()"
+                >
+                    Change Position Value
+                </button>
+            </div>
+        </div>
+
+        <div class="w-1/3 text-center px-12">
+            <span class="block font-bold mb-7">Choose Leverage</span>
+
+            <span class="block font-extralight text-4xl mt-4"
+                >{{ leverage | formatValue }}x</span
+            >
+
+            <div class="block font-normal text-xs mb-2 h-2"></div>
+
+            <mat-slider
+                class="w-full mt-5"
+                [(value)]="leverage"
+                (valueChange)="simulate()"
+                min="1.1"
+                [max]="getMaxLeverage()"
+                step=".01"
+            ></mat-slider>
+
+            <div class="flex justify-center mt-4 mb-8">
+                <div class="mx-1" *ngFor="let l of [2, 3, 4]">
+                    <button
+                        mat-button
+                        class="small primary"
+                        [disabled]="l > getMaxLeverage()"
+                        (click)="leverage = l; simulate()"
+                    >
+                        {{ l }}x
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-center mt-6">
+                <button
+                    mat-button
+                    class="secondary"
+                    [disabled]="disableChangeLeverage() | async"
+                    (click)="changeLeverage()"
+                >
+                    Change Leverage
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div
+        [class.mt-4]="position.positionValueUsd > 5"
+        class="flex w-full justify-center"
+    >
+        <app-claim-rewards
+            class="mx-2 mt-4 w-64"
+            [position]="position"
+        ></app-claim-rewards>
+
+        <app-position-close
+            *ngIf="position.positionValueUsd > 5"
+            class="mx-2 mt-4 w-64"
+            [position]="position"
+        ></app-position-close>
+
+        <div
+            class="mx-2 mt-4 w-64"
+            *ngIf="
+                !(disableChangeLeverage() | async) ||
+                !disableChangePositionValue()
+            "
+        >
+            <button mat-button class="secondary w-full" (click)="resetValues()">
+                Reset Values
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,87 @@
+<div class="flex flex-col mt-6 mx-6">
+    <div class="flex mb-4">
+        <div class="bordered-block bordered-block--internal flex flex-1 mr-2">
+            <div class="text-grey">APR:</div>
+
+            <div class="flex-grow text-right font-bold">
+                {{ apr | formatValue: ' ' }}%
+            </div>
+        </div>
+
+        <div class="bordered-block bordered-block--internal flex flex-1 ml-2">
+            <div class="text-grey">xFODL price:</div>
+
+            <div class="flex-grow text-right">
+                <span class="font-bold">{{
+                    xFodlPrice | formatValue: ' ':4
+                }}</span>
+
+                FODL
+            </div>
+        </div>
+    </div>
+
+    <div class="bordered-block bordered-block--internal flex mb-4">
+        <div class="text-grey">Total Staked:</div>
+
+        <div class="flex-grow text-right">
+            <span class="font-bold">{{
+                xFodlTotalSupply | formatValue: ' ':4
+            }}</span>
+
+            xFODL =
+
+            <span class="font-bold">{{
+                xFodlTotalSupply * xFodlPrice | formatValue: ' ':4
+            }}</span>
+
+            FODL
+
+            <span class="ml-2">({{ tvlUsd | formatValue: '$' }})</span>
+        </div>
+    </div>
+
+    <div class="bordered-block bordered-block--internal flex">
+        <div class="text-grey">Your Stake:</div>
+
+        <div class="flex-grow text-right">
+            <span class="font-bold">{{
+                getBalanceXFodl() | formatValue: ' ':4
+            }}</span>
+
+            xFODL =
+
+            <span class="font-bold">{{
+                getBalanceXFodl() * xFodlPrice | formatValue: ' ':4
+            }}</span>
+
+            FODL
+
+            <span class="ml-2"
+                >({{ getBalanceXFodlUsd() | formatValue: '$' }})</span
+            >
+        </div>
+    </div>
+</div>
+
+<mat-tab-group mat-align-tabs="center">
+    <mat-tab label="Stake FODL">
+        <div class="px-6">
+            <app-single-sided-stake
+                [balance]="balanceFodl"
+                [xFodlPrice]="xFodlPrice"
+                (reloadBalances)="getBalances()"
+            ></app-single-sided-stake>
+        </div>
+    </mat-tab>
+
+    <mat-tab label="Unstake xFODL">
+        <div class="px-6">
+            <app-single-sided-unstake
+                [balance]="balanceXFodl"
+                [xFodlPrice]="xFodlPrice"
+                (reloadBalances)="getBalances()"
+            ></app-single-sided-unstake>
+        </div>
+    </mat-tab>
+</mat-tab-group>

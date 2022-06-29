@@ -1,0 +1,204 @@
+<div class="app-enter-position-form py-6 px-8 flex justify-between">
+    <div class="w-3/12 text-center">
+        <span class="block font-bold mb-12">Supplied Asset </span>
+
+        <app-asset-select
+            *ngIf="getSupplyAsset()"
+            class="flex w-48 mx-auto"
+            [markets]="marketsService.markets$ | async"
+            [assets]="supplyAssets"
+            [asset]="getSupplyAsset()"
+            (assetChange)="handleSupplyAssetChange($event)"
+        ></app-asset-select>
+
+        <div class="app-input flex relative">
+            <input
+                type="number"
+                name="supplyAmount"
+                class="py-2"
+                [(ngModel)]="supplyAmount"
+                (ngModelChange)="simulateTransaction()"
+            />
+
+            <small
+                *ngIf="supplyMarket"
+                class="cursor-pointer absolute right-0 -top-2"
+                (click)="setMaxSupplyAmount()"
+                >Max:
+                {{
+                    supplyMarket.walletBalance
+                        | formatValue: supplyMarket.assetSymbol
+                }}</small
+            >
+        </div>
+
+        <small *ngIf="supplyAmount" class="inline-block mt-2"
+            >{{ supplyAmount | formatValue: supplyMarket.assetSymbol }} x
+            {{ leverage }} =
+            {{
+                supplyAmount * leverage | formatValue: supplyMarket.assetSymbol
+            }}
+            <span class="font-bold"
+                >≈
+                {{
+                    marketsService.getValueUSD(
+                        supplyAmount * leverage,
+                        supplyMarket.assetAddress,
+                        supplyMarket.platform.address
+                    ) | formatValue: '$'
+                }}</span
+            ></small
+        >
+    </div>
+
+    <div class="flex"></div>
+
+    <div class="w-3/12 text-center">
+        <span class="block font-bold mb-12">Borrowed Asset</span>
+        <app-asset-select
+            *ngIf="borrowAsset$ | async"
+            class="flex w-48 mx-auto"
+            [assets]="borrowAssets$ | async"
+            [asset]="(borrowAsset$ | async)?.asset"
+            (assetChange)="handleBorrowAssetChange($event)"
+        ></app-asset-select>
+
+        <div class="app-input flex relative">
+            <span
+                *ngIf="!(foldingService.borrowAmountRecalculating$ | async)"
+                class="block w-full text-center font-thin text-2xl my-2"
+            >
+                {{
+                    borrowAmount >= 0
+                        ? (borrowAmount
+                          | formatValue: (borrowAsset$ | async)?.asset.name)
+                        : 'Error'
+                }}
+            </span>
+
+            <mat-progress-spinner
+                *ngIf="foldingService.borrowAmountRecalculating$ | async"
+                class="app-enter-position-form__spinner mx-auto"
+                color="accent"
+                mode="indeterminate"
+            ></mat-progress-spinner>
+        </div>
+
+        <small
+            *ngIf="
+                borrowAmount >= 0 &&
+                !(foldingService.borrowAmountRecalculating$ | async)
+            "
+            class="inline-block font-extrabold mt-2"
+            >~{{
+                ((borrowAsset$ | async)?.asset.address
+                    ? marketsService.getValueUSD(
+                          borrowAmount,
+                          (borrowAsset$ | async).asset.address,
+                          (borrowAsset$ | async).asset.platformAddress
+                      )
+                    : 0
+                ) | formatValue: '$'
+            }}</small
+        >
+    </div>
+
+    <div class="flex"></div>
+
+    <div class="w-3/12">
+        <div class="flex ml-2 mb-8">
+            <span class="flex self-center font-bold w-20">Market:</span>
+
+            <div class="flex flex-grow">
+                <mat-select
+                    [value]="foldingService.strategy$ | async"
+                    (valueChange)="handleStrategyChange($event)"
+                >
+                    <mat-option value="everything">All</mat-option>
+                    <mat-option value="long">Long</mat-option>
+                    <mat-option value="short">Short</mat-option>
+                    <mat-option value="correlated">Farming</mat-option>
+                </mat-select>
+            </div>
+        </div>
+
+        <div class="flex ml-2">
+            <span class="flex self-center font-bold w-20">Leverage:</span>
+
+            <span class="font-thin text-2xl inline-block w-16">
+                {{ leverage }}x
+            </span>
+
+            <div class="flex self-center">
+                <div class="mx-1" *ngFor="let l of [2, 3, 4, 5]">
+                    <button
+                        mat-button
+                        class="small primary"
+                        [disabled]="l < getMinLeverage() || l > maxLeverage"
+                        (click)="leverage = l; simulateTransaction()"
+                    >
+                        {{ l }}x
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <mat-slider
+            class="w-full"
+            [class.opacity-0]="maxLeverage === 1"
+            [(value)]="leverage"
+            (valueChange)="simulateTransaction()"
+            [max]="maxLeverage"
+            [min]="getMinLeverage()"
+            step=".01"
+        ></mat-slider>
+
+        <div class="flex mx-2">
+            <div class="cursor-pointer" [class.has-tooltip]="foldingMarket">
+                <span class="block w-full text-center text-4xl font-extralight"
+                    >{{ getApr() | async | formatValue }}%</span
+                >
+                <small class="block w-full text-center">APR</small>
+
+                <div class="tooltip">
+                    <app-apr-tooltip
+                        *ngIf="foldingMarket"
+                        [foldingMarket]="foldingMarket"
+                        [leverage]="leverage"
+                    ></app-apr-tooltip>
+                </div>
+            </div>
+
+            <div class="w-full text-right pt-1">
+                <button
+                    *ngIf="ethereumService.account$ | async"
+                    [disabled]="disableEnterPositionButton()"
+                    mat-button
+                    class="secondary"
+                    (click)="enterPosition()"
+                >
+                    Enter Position
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="pnl" class="flex mt-2 text-xs">
+            <span class="opacity-50">Initial P&L:</span>
+
+            <span class="ml-2 font-bold"> {{ pnl | formatValue }}%</span>
+        </div>
+
+        <div
+            *ngIf="
+                supplyAmount &&
+                !borrowAmount &&
+                !(foldingService.borrowAmountRecalculating$ | async)
+            "
+            class="flex mt-2 text-xs"
+        >
+            <span class="text-red-400"
+                >Cannot open position due to market conditions.</span
+            >
+        </div>
+    </div>
+</div>

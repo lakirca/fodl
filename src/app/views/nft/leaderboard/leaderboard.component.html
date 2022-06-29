@@ -1,0 +1,265 @@
+<div class="m-6">
+    <div class="grid grid-cols-12 m-6">
+        <div></div>
+        <div
+            class="cursor-pointer text-lg text-center"
+            (click)="sortBy('rank')"
+        >
+            Rank
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === 'rank'"
+                >arrow_downward</mat-icon
+            >
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === '-rank'"
+                >arrow_upward</mat-icon
+            >
+        </div>
+
+        <div
+            class="cursor-pointer text-lg text-center col-span-3"
+            (click)="sortBy('total')"
+        >
+            # of Tickets
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === 'total'"
+                >arrow_downward</mat-icon
+            >
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === '-total'"
+                >arrow_upward</mat-icon
+            >
+        </div>
+
+        <div
+            class="cursor-pointer text-lg text-center col-span-3"
+            (click)="sortBy('percent')"
+        >
+            % of Tickets
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === 'percent'"
+                >arrow_downward</mat-icon
+            >
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-percent'"
+                >arrow_upward</mat-icon
+            >
+        </div>
+
+        <div class="text-lg text-center col-span-4 -mr-6">
+            <div class="flex w-full">
+                <div class="cursor-pointer flex" (click)="sortBy('address')">
+                    Address
+
+                    <mat-icon
+                        class="small ml-2 self-end mb-1"
+                        *ngIf="(sortBy$ | async) === 'address'"
+                        >arrow_downward</mat-icon
+                    >
+
+                    <mat-icon
+                        class="small ml-2 self-end mb-1"
+                        *ngIf="(sortBy$ | async) === '-address'"
+                        >arrow_upward</mat-icon
+                    >
+                </div>
+
+                <div class="flex grow justify-end">
+                    <div
+                        class="
+                            app-input-small
+                            !bg-black
+                            rounded
+                            py-1
+                            px-2
+                            leading-none
+                            !w-80
+                            relative
+                        "
+                    >
+                        <input
+                            mat-input
+                            placeholder="Search"
+                            ngModel
+                            (ngModelChange)="updateSearch($event)"
+                        />
+
+                        <mat-icon
+                            *ngIf="!(search$ | async)"
+                            class="small absolute right-2 top-2 opacity-50"
+                            >search</mat-icon
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        *ngFor="let entry of currentLeaderboard$ | async"
+        class="grid grid-cols-12 bordered-block bordered-block--internal my-3"
+    >
+        <div class="text-4xl font-extralight flex justify-center items-center">
+            <mat-icon class="text-green-400" *ngIf="entry.change > 0"
+                >north</mat-icon
+            >
+            <mat-icon *ngIf="entry.change === 0">remove</mat-icon>
+            <mat-icon class="text-red-400" *ngIf="entry.change < 0"
+                >south</mat-icon
+            >
+        </div>
+
+        <div class="text-4xl font-extralight flex justify-center items-center">
+            <span
+                *ngIf="entry.rank <= 3"
+                class="
+                    bg-zinc-600
+                    rounded-full
+                    inline-flex
+                    w-12
+                    h-12
+                    items-center
+                    justify-center
+                "
+                >{{ entry.rank }}</span
+            >
+            <span *ngIf="entry.rank > 3">{{ entry.rank }}</span>
+        </div>
+
+        <div
+            class="
+                text-4xl
+                font-extralight
+                flex
+                justify-center
+                items-center
+                col-span-3
+            "
+        >
+            <span class="has-tooltip cursor-pointer">
+                {{ entry.total | formatValue: ' ':0 }}
+
+                <div class="tooltip above w-72">
+                    <div *ngIf="entry.boatlifters">
+                        Boatlifters:
+                        <span class="font-bold">{{
+                            entry.boatlifters | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry['homestead-trading']">
+                        Homestead Trading:
+                        <span class="font-bold">{{
+                            entry['homestead-trading'] | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry['bnb-trading']">
+                        BNB Trading:
+                        <span class="font-bold">{{
+                            entry['bnb-trading'] | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry['matic-trading']">
+                        Matic Trading:
+                        <span class="font-bold">{{
+                            entry['matic-trading'] | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry['homestead-closedTrade']">
+                        Homestead Closed Trades:
+                        <span class="font-bold">{{
+                            entry['homestead-closedTrade'] | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry['bnb-closedTrade']">
+                        BNB Closed Trades:
+                        <span class="font-bold">{{
+                            entry['bnb-closedTrade'] | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry['matic-closedTrade']">
+                        Matic Closed Trades:
+                        <span class="font-bold">{{
+                            entry['matic-closedTrade'] | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry['fodl-eth-lp']">
+                        FODL/ETH LP:
+                        <span class="font-bold">{{
+                            entry['fodl-eth-lp'] | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry['fodl-matic-lp']">
+                        FODL/MATIC LP:
+                        <span class="font-bold">{{
+                            entry['fodl-matic-lp'] | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry['fodl-usdc-lp']">
+                        FODL/USDC LP:
+                        <span class="font-bold">{{
+                            entry['fodl-usdc-lp'] | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry.xFodl">
+                        xFODL:
+                        <span class="font-bold">{{
+                            entry.xFodl | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry.socialmedia">
+                        Social Media:
+                        <span class="font-bold">{{
+                            entry.socialmedia | formatValue: ' ':0
+                        }}</span>
+                    </div>
+
+                    <div *ngIf="entry.members">
+                        Members:
+                        <span class="font-bold">{{
+                            entry.members | formatValue: ' ':0
+                        }}</span>
+                    </div>
+                </div>
+            </span>
+        </div>
+
+        <div
+            class="
+                text-4xl
+                font-extralight
+                flex
+                justify-center
+                items-center
+                col-span-3
+            "
+        >
+            {{ entry.percent | formatValue: '%' }}
+        </div>
+
+        <div
+            class="
+                text-lg
+                font-light
+                flex
+                justify-center
+                items-center
+                col-span-4
+            "
+        >
+            {{ entry.address }}
+        </div>
+    </div>
+</div>

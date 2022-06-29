@@ -1,0 +1,60 @@
+<footer class="w-full px-8 py-16 flex text-sm">
+    <div class="flex w-1/3 items-center opacity-50">
+        Copyright &copy;
+        <a [href]="website" target="_blank" class="inline-block mx-1"
+            >FODL Finance</a
+        >
+        2021
+    </div>
+
+    <div
+        class="
+            flex
+            w-1/3
+            items-center
+            justify-center
+            opacity-0
+            text-xs
+            cursor-pointer
+            hover:opacity-50
+            transition-all
+            delay-500
+        "
+    >
+        Build: {{ build$ | async }}
+    </div>
+
+    <div class="flex w-1/3 justify-end items-center">
+        <a
+            class="opacity-50 hover:opacity-100 transition-all"
+            href="https://medium.com/@FODL/fodl-100-decentralized-leverage-trading-252b7eca732"
+            target="_blank"
+        >
+            <img src="assets/medium.svg" class="w-6 mx-2" />
+        </a>
+
+        <a
+            class="opacity-50 hover:opacity-100 transition-all"
+            href="https://fodl-1.gitbook.io/fodl-1/"
+            target="_blank"
+        >
+            <img src="assets/gitbook.svg" class="w-6 mx-2" />
+        </a>
+
+        <a
+            class="opacity-50 hover:opacity-100 transition-all"
+            href="https://twitter.com/FODLfi"
+            target="_blank"
+        >
+            <img src="assets/twitter.svg" class="w-6 mx-2" />
+        </a>
+
+        <a
+            class="opacity-50 hover:opacity-100 transition-all"
+            href="https://discord.gg/vqnzTuF5mb"
+            target="_blank"
+        >
+            <img src="assets/discord.svg" class="w-6 mx-2" />
+        </a>
+    </div>
+</footer>

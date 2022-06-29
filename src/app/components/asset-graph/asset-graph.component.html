@@ -1,0 +1,176 @@
+<div class="grid relative">
+    <div
+        class="flex items-center flex-col p-16 justify-center h-full"
+        *ngIf="!chartOptions"
+    >
+        <div
+            class="
+                chart-icon-wrapper
+                w-8
+                h-8
+                border-color-abbey border-l-4 border-b-4
+                mb-8
+            "
+        >
+            <mat-icon class="material-icons-outlined icon color-abbey scale-75"
+                >show_chart</mat-icon
+            >
+        </div>
+
+        <p class="color-abbey font-medium leading-4 title mt-0.5">
+            Asset Graph Will Appear Here
+        </p>
+    </div>
+
+    <div class="flex-1 p-4" *ngIf="chartOptions">
+        <ng-container *ngIf="asset$ | async as asset; else loading">
+            <ng-container *ngIf="!asset.error; else error">
+                <div class="flex items-center">
+                    <app-icon-asset
+                        class="w-4"
+                        [asset]="
+                            1 / asset?.current_price
+                                | formatExchangeRate
+                                    : position.supplyMarket.assetSymbol
+                                    : position.borrowMarket.assetSymbol
+                                    : 'destination'
+                                | assetAddress
+                                    : position.supplyMarket.platform.address
+                        "
+                    ></app-icon-asset>
+
+                    <p class="ml-2 text-base">
+                        {{
+                            1 / asset?.current_price
+                                | formatExchangeRate
+                                    : position.supplyMarket.assetSymbol
+                                    : position.borrowMarket.assetSymbol
+                                    : 'destination'
+                        }}
+                        Price
+                    </p>
+                </div>
+
+                <div class="flex my-2 items-center">
+                    <app-icon-asset
+                        class="w-6 mr-2"
+                        [asset]="
+                            1 / asset?.current_price
+                                | formatExchangeRate
+                                    : position.supplyMarket.assetSymbol
+                                    : position.borrowMarket.assetSymbol
+                                    : 'source'
+                                | assetAddress
+                                    : position.supplyMarket.platform.address
+                        "
+                    ></app-icon-asset>
+
+                    <span class="text-3xl"
+                        >{{
+                            1 / asset?.current_price
+                                | formatExchangeRate
+                                    : position.supplyMarket.assetSymbol
+                                    : position.borrowMarket.assetSymbol
+                                    : 'sourceOnly'
+                        }}
+                    </span>
+                </div>
+
+                <div class="flex items-center">
+                    <div class="w-1/2">
+                        <span class="font-semibold text-special leading-4">
+                            {{
+                                asset?.market_data?.price_change_percentage_24h
+                                    | number: '1.2-2'
+                            }}%
+                        </span>
+
+                        <mat-icon
+                            class="text-special"
+                            aria-hidden="false"
+                            aria-label="Example home icon"
+                            >{{
+                                asset?.market_data?.price_change_24h < 0
+                                    ? 'arrow_drop_down'
+                                    : 'arrow_drop_up'
+                            }}</mat-icon
+                        >
+
+                        <span class="text-gray-400 font-medium leading-4 ml-2">
+                            vs yesterday</span
+                        >
+                    </div>
+
+                    <div class="w-1/2">
+                        <div
+                            class="
+                                flex
+                                justify-end
+                                bg-transparent
+                                text-gray-500
+                                font-bold
+                                mt-2
+                            "
+                        >
+                            <span
+                                class="p-1 cursor-pointer hover:"
+                                (click)="filterChartData('1')"
+                                [class.text-white]="filterDays === '1'"
+                                >1D</span
+                            >
+
+                            <span
+                                class="p-1 cursor-pointer hover:"
+                                (click)="filterChartData('7')"
+                                [class.text-white]="filterDays === '7'"
+                                >1W</span
+                            >
+
+                            <span
+                                class="p-1 cursor-pointer hover:"
+                                (click)="filterChartData('30')"
+                                [class.text-white]="filterDays === '30'"
+                                >1M</span
+                            >
+
+                            <span
+                                class="p-1 cursor-pointer hover:"
+                                (click)="filterChartData('90')"
+                                [class.text-white]="filterDays === '90'"
+                                >3M</span
+                            >
+                            <span
+                                class="p-1 cursor-pointer hover:"
+                                (click)="filterChartData('365')"
+                                [class.text-white]="filterDays === '365'"
+                                >Year</span
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <highcharts-chart
+                    class="w-full block h-48 -m-2"
+                    [Highcharts]="Highcharts"
+                    [options]="chartOptions"
+                    [constructorType]="'stockChart'"
+                ></highcharts-chart>
+            </ng-container>
+        </ng-container>
+    </div>
+</div>
+
+<ng-template #loading>
+    <div class="h-full flex justify-center items-center">
+        <mat-spinner [diameter]="50" [strokeWidth]="3"></mat-spinner>
+    </div>
+</ng-template>
+
+<ng-template #error>
+    <div class="h-full grid text-center">
+        <div class="w-full my-auto">
+            <h1 class="text-lg mb-4 text-red-500">An Error Occured</h1>
+            <p class="">{{ (asset$ | async)?.error }}</p>
+        </div>
+    </div>
+</ng-template>

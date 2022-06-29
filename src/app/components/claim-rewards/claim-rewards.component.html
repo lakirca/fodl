@@ -1,0 +1,9 @@
+<button
+    mat-button
+    class="primary w-full"
+    (click)="claimRewards()"
+    [disabled]="!(rewards && rewards > minRewards)"
+>
+    Claim {{ rewards | formatValue: rewardsAssetSymbol }}
+    {{ rewardsAssetSymbol }}
+</button>

@@ -1,0 +1,19 @@
+<div class="bordered-block bordered-block--no-padding">
+    <span class="relative text-2xl block w-full text-center py-6">
+        Enter New Position
+    </span>
+
+    <app-enter-position-form
+        [supplyMarket]="supplyMarket"
+        [borrowAsset]="borrowAsset"
+        [leverage]="leverage"
+        (supplyMarketChange)="supplyMarket = $event"
+    ></app-enter-position-form>
+
+    <app-enter-position-strategies
+        *ngIf="(foldingService.strategy$ | async) !== 'everything'"
+        [market]="supplyMarket"
+        (selectBorrowAsset)="borrowAsset = $event"
+        (selectLeverage)="leverage = $event"
+    ></app-enter-position-strategies>
+</div>

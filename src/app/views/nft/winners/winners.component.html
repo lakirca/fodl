@@ -1,0 +1,69 @@
+<div class="m-6">
+    <div class="grid grid-cols-5 m-6">
+        <div class="col-span-2 text-lg text-center">NFT</div>
+        <div class="text-lg text-center">Date</div>
+        <div class="col-span-2 text-lg text-center">Address</div>
+    </div>
+
+    <div
+        *ngFor="let winner of winners"
+        class="grid grid-cols-5 bordered-block bordered-block--internal my-3"
+    >
+        <div class="col-span-2 flex justify-start items-center">
+            <img
+                [attr.src]="winner.award.url"
+                class="w-56 h-32 mr-12 object-cover object-top rounded"
+            />
+
+            <div class="flex flex-col items-center justify-center">
+                <div class="flex uppercase text-2xl font-extralight mt-2">
+                    {{ winner.award.pool }} #{{ winner.award.id || '????' }}
+                </div>
+
+                <button
+                    *ngIf="isConnectedUserWinner(winner)"
+                    mat-flat-button
+                    class="mt-2 flex secondary px-6"
+                    (click)="claimNFT(winner)"
+                >
+                    Claim
+                </button>
+            </div>
+        </div>
+
+        <div class="text-2xl font-extralight flex justify-center items-center">
+            {{ winner.award.date }}
+        </div>
+
+        <div
+            class="
+                col-span-2
+                text-xl
+                font-extralight
+                flex
+                justify-center
+                items-center
+            "
+        >
+            <ng-container
+                *ngIf="
+                    winner.address &&
+                    winner.address !=
+                        '0x0000000000000000000000000000000000000000'
+                "
+            >
+                {{ winner.address }}
+            </ng-container>
+
+            <ng-container
+                *ngIf="
+                    !winner.address ||
+                    winner.address ==
+                        '0x0000000000000000000000000000000000000000'
+                "
+            >
+                ? ? ?
+            </ng-container>
+        </div>
+    </div>
+</div>

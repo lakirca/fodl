@@ -1,0 +1,399 @@
+<div mat-dialog-content class="!overflow-hidden">
+    <div
+        class="
+            bordered-block
+            bordered-block--transparent
+            bordered-block--no-padding
+        "
+    >
+        <div class="grid grid-cols-9 px-4">
+            <div class="col-span-3 flex items-center text-sm">Asset Pair</div>
+
+            <div class="col-span-2 flex items-center text-sm">
+                Position Value / P&L
+            </div>
+
+            <div class="col-span-2 flex items-center text-sm">
+                Current Price / Liq.
+            </div>
+
+            <div class="col-span-2 flex items-center text-sm">
+                Leverage / APR
+            </div>
+        </div>
+
+        <div
+            class="
+                grid grid-cols-9
+                bordered-block bordered-block--internal
+                my-4
+            "
+        >
+            <div class="col-span-3 flex items-center">
+                <app-icon-pair-platform
+                    [supplyAsset]="position.supplyMarket.assetAddress"
+                    [supplyAssetName]="position.supplyMarket.assetSymbol"
+                    [borrowAsset]="position.borrowMarket.assetAddress"
+                    [borrowAssetName]="position.borrowMarket.assetSymbol"
+                    [platformName]="position.supplyMarket.platform.name"
+                ></app-icon-pair-platform>
+            </div>
+
+            <div
+                class="
+                    col-span-2
+                    flex flex-col
+                    items-start
+                    justify-center
+                    text-base
+                "
+            >
+                <div class="flex mb-2 cursor-pointer has-tooltip">
+                    {{
+                        position.positionValue
+                            | formatValue
+                                : (position.supplyTokenAddress | assetSymbol)
+                    }}
+                    {{ position.supplyTokenAddress | assetSymbol }}
+
+                    <div class="tooltip below">
+                        {{ position.positionValueUsd | formatValue: '$' }}
+                    </div>
+                </div>
+
+                <div
+                    class="flex cursor-pointer has-tooltip"
+                    [class.text-green-600]="
+                        position.pnl + position.rewardsPnl >= 0
+                    "
+                    [class.text-red-600]="
+                        position.pnl + position.rewardsPnl < 0
+                    "
+                >
+                    {{
+                        (position.pnl || 0) + (position.rewardsPnl || 0)
+                            | formatValue
+                    }}%
+
+                    <div class="tooltip">
+                        <div class="flex">
+                            <div class="w-32 mr-4">Principal Value:</div>
+
+                            <div class="flex grow">
+                                <span class="font-semibold mr-1">{{
+                                    position.principalValue
+                                        | formatValue
+                                            : (position.supplyTokenAddress
+                                                  | assetSymbol)
+                                }}</span>
+                                {{ position.supplyTokenAddress | assetSymbol }}
+                                <span class="font-semibold"
+                                    >({{
+                                        position.principalValueUsd
+                                            | formatValue: '$'
+                                    }})</span
+                                >
+                            </div>
+                        </div>
+
+                        <div class="flex">
+                            <div class="w-32 mr-4">Current Value:</div>
+
+                            <div class="flex grow">
+                                <span class="font-semibold mr-1">{{
+                                    position.positionValue
+                                        | formatValue
+                                            : (position.supplyTokenAddress
+                                                  | assetSymbol)
+                                }}</span>
+                                {{ position.supplyTokenAddress | assetSymbol }}
+                                <span class="font-semibold"
+                                    >({{
+                                        position.positionValueUsd
+                                            | formatValue: '$'
+                                    }})</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="
+                    col-span-2
+                    flex flex-col
+                    items-start
+                    justify-center
+                    text-base
+                "
+            >
+                <div class="flex mb-2 cursor-pointer has-tooltip">
+                    {{
+                        position.currentPrice
+                            | formatExchangeRate
+                                : (position.supplyTokenAddress | assetSymbol)
+                                : (position.borrowTokenAddress | assetSymbol)
+                    }}
+
+                    <div class="tooltip w-48">
+                        <div class="flex">
+                            <div class="w-32">
+                                {{ position.borrowMarket.assetSymbol }}:
+                            </div>
+
+                            <div class="font-bold">
+                                {{
+                                    position.borrowMarket.assetUsdValue
+                                        | currency
+                                }}
+                            </div>
+                        </div>
+
+                        <div class="flex">
+                            <div class="w-32">
+                                {{ position.supplyMarket.assetSymbol }}:
+                            </div>
+
+                            <div class="font-bold">
+                                {{
+                                    position.supplyMarket.assetUsdValue
+                                        | currency
+                                }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    *ngIf="
+                        position.positionValueUsd > 5 &&
+                        position.supplyTokenAddress.toLowerCase() !==
+                            position.borrowTokenAddress.toLocaleLowerCase()
+                    "
+                    class="flex w-full pr-8"
+                >
+                    <app-borrow-limit [position]="position"></app-borrow-limit>
+                </div>
+            </div>
+
+            <div
+                class="
+                    col-span-2
+                    flex flex-col
+                    items-start
+                    justify-center
+                    text-base
+                "
+            >
+                <div class="flex mb-2">
+                    {{ position.leverage | formatValue }}x
+                </div>
+
+                <div class="flex cursor-pointer has-tooltip">
+                    {{ position.apr | formatValue }}%
+
+                    <div class="tooltip" *ngIf="position.foldingMarket">
+                        <app-apr-tooltip
+                            [foldingMarket]="position.foldingMarket"
+                            [leverage]="position.leverage"
+                        ></app-apr-tooltip>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="
+                grid grid-cols-3
+                bordered-block bordered-block--internal
+                my-4
+            "
+        >
+            <div class="col-span-1">
+                Stop Loss Price
+                <span class="ml-2 text-sm cursor-pointer has-tooltip">
+                    <mat-icon class="small opacity-50">info_outline</mat-icon>
+
+                    <div class="tooltip top-right w-80">
+                        Price of {{ position.supplyMarket.assetSymbol }} in
+                        {{ position.borrowMarket.assetSymbol }} at which the bot
+                        should take the action, assuming no interest.
+                    </div>
+                </span>
+
+                <div class="app-input flex my-2 mr-4">
+                    <input
+                        matInput
+                        type="number"
+                        [value]="
+                            getStopLossPriceReadableToken()
+                                | formatValue
+                                    : getStopLossPriceReadableTokenAssetSymbol()
+                        "
+                        (change)="setStopLossPriceReadableToken($event)"
+                    />
+                </div>
+            </div>
+
+            <div class="col-span-2 flex items-end">
+                <mat-slider
+                    class="w-full"
+                    [(value)]="collateralUsageLimit"
+                    [min]="getMinCollateralUsageLimit()"
+                    max="100"
+                    step=".01"
+                ></mat-slider>
+            </div>
+        </div>
+
+        <div
+            class="
+                grid grid-cols-3
+                bordered-block bordered-block--internal
+                my-4
+            "
+        >
+            <div class="col-span-1">
+                Unwind Factor
+
+                <span class="ml-2 text-sm cursor-pointer has-tooltip">
+                    <mat-icon class="small opacity-50">info_outline</mat-icon>
+
+                    <div class="tooltip right w-80">
+                        Percentage by which your position will be decreased when
+                        the action is triggered.
+                    </div>
+                </span>
+
+                <div class="app-input flex my-2 mr-4">
+                    <span
+                        class="block w-full mr-2 text-2xl font-thin text-center"
+                        >{{ unwindFactor }}%</span
+                    >
+                </div>
+            </div>
+
+            <div class="col-span-2 flex items-end">
+                <mat-slider
+                    class="w-full"
+                    [(value)]="unwindFactor"
+                    min="1"
+                    max="100"
+                    step=".01"
+                ></mat-slider>
+            </div>
+        </div>
+
+        <div
+            class="
+                grid grid-cols-3
+                bordered-block bordered-block--internal
+                my-4
+            "
+        >
+            <div class="col-span-1">
+                Bot Tip
+
+                <span class="ml-2 text-sm cursor-pointer has-tooltip">
+                    <mat-icon class="small opacity-50">info_outline</mat-icon>
+
+                    <div class="tooltip right w-80">
+                        Percentage of borrow repayment that bot is incentivised
+                        with.
+                    </div>
+                </span>
+
+                <div class="app-input flex my-2 mr-4">
+                    <span
+                        class="block w-full mr-2 text-2xl font-thin text-center"
+                        [class.text-warn]="
+                            slippageIncentive > 5 && slippageIncentive <= 7.5
+                        "
+                        [class.text-alert]="slippageIncentive > 7.5"
+                        >{{ slippageIncentive }}%</span
+                    >
+                </div>
+            </div>
+
+            <div class="col-span-2 flex items-end">
+                <mat-slider
+                    class="w-full"
+                    [(value)]="slippageIncentive"
+                    min="0.01"
+                    max="10"
+                    step=".01"
+                ></mat-slider>
+            </div>
+        </div>
+    </div>
+
+    <span class="flex justify-center text-sm items-center mb-4 opacity-50"
+        ><mat-icon class="mr-4">info_outline</mat-icon> Please note that the bot
+        is triggered based on borrow limit, not fixed price.<br />
+        The borrow limit is also affected by the owed/accrued
+        {{ position.supplyMarket.assetSymbol }} interest.</span
+    >
+
+    <div class="flex mb-4 opacity-50">
+        <div class="flex">Stop loss at borrow limit:</div>
+
+        <div class="flex grow justify-end">
+            {{ collateralUsageLimit | formatValue }}%
+        </div>
+    </div>
+
+    <div class="flex mb-4 opacity-50">
+        <div class="flex">
+            Position value after stop loss ({{
+                position.supplyMarket.assetSymbol
+            }}):
+        </div>
+
+        <div class="flex grow justify-end">
+            {{
+                getPositionValueLeft()
+                    | formatValue: position.supplyMarket.assetSymbol
+            }}
+        </div>
+    </div>
+
+    <div class="flex mb-4 opacity-50">
+        <div class="flex">
+            Tip given to the bot ({{ position.supplyMarket.assetSymbol }}):
+        </div>
+
+        <div
+            class="flex grow justify-end"
+            [class.color-alert]="getTipForTheBot() <= 0"
+        >
+            {{
+                getTipForTheBot()
+                    | formatValue: position.supplyMarket.assetSymbol
+            }}
+        </div>
+    </div>
+
+    <div class="flex mb-6 opacity-50">
+        <div class="flex">Leverage after stop loss:</div>
+
+        <div
+            class="flex grow justify-end"
+            [class.color-alert]="getLeverageAfterStopLoss() <= 0"
+        >
+            {{ getLeverageAfterStopLoss() | formatValue }}
+        </div>
+    </div>
+</div>
+
+<div mat-dialog-actions class="justify-center no-space">
+    <button
+        mat-button
+        class="secondary mr-2 w-48"
+        (click)="getStopLossConfiguration()"
+    >
+        Reset
+    </button>
+
+    <button mat-button class="primary w-48" (click)="save()">Save</button>
+</div>

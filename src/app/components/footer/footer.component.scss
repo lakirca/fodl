@@ -1,0 +1,12 @@
+@import '../../../styles/colors.scss';
+
+footer {
+    a {
+        color: $white;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+}

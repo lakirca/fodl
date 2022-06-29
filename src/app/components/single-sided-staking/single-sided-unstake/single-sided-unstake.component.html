@@ -1,0 +1,25 @@
+<div class="app-input flex relative my-8 mx-2">
+    <input
+        type="number"
+        name="unstakeAmount"
+        class="py-2"
+        placeholder="Enter Amount"
+        [(ngModel)]="unstakeAmount"
+        (ngModelChange)="modelChange()"
+    />
+
+    <small class="cursor-pointer absolute right-0 -top-6" (click)="setMax()"
+        >Max: {{ getFormattedBalance() }}</small
+    >
+</div>
+
+<div class="flex justify-center my-8 mx-2">
+    <button
+        [disabled]="!unstakeAmount || unstakeAmountBigNumber.gt(balance)"
+        mat-button
+        class="secondary w-full"
+        (click)="unstake()"
+    >
+        Unstake
+    </button>
+</div>

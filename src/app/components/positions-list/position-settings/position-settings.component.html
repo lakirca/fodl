@@ -1,0 +1,21 @@
+<app-dialog [noTitle]="true" [noPadding]="true" [dialogRef]="dialogRef">
+    <mat-tab-group mat-align-tabs="center">
+        <mat-tab *ngIf="stopLoss$ | async" label="Stop Loss">
+            <div class="p-6">
+                <app-stop-loss-settings
+                    [position]="data.position"
+                    [dialogRef]="dialogRef"
+                ></app-stop-loss-settings>
+            </div>
+        </mat-tab>
+
+        <mat-tab *ngIf="pnlBot$ | async" label="P/L Bot">
+            <div class="p-6">
+                <app-bot-settings
+                    [position]="data.position"
+                    [dialogRef]="dialogRef"
+                ></app-bot-settings>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+</app-dialog>

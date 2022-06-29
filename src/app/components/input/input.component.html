@@ -1,0 +1,22 @@
+<div
+    class="app-number-input flex items-center px-2 max-h-10 rounded-lg"
+    [ngClass]="invalid ? 'bg-error' : 'bg-app-number-input'">
+    <input
+        matInput
+        matInputFormatted
+        [placeholder]="placeHolder"
+        [disabled]="disabled"
+        [name]="name"
+        [(ngModel)]="value"
+        class="h-10 bg-transparent font-normal text-lg outline-none border-none"
+        type="text">
+
+    <div class="flex flex-col items-center">
+        <button (click)="handleOnIncrease()" [disabled]="disabled">
+            <mat-icon>arrow_drop_up</mat-icon>
+        </button>
+        <button (click)="handleOnDecrease()" [disabled]="disabled">
+            <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+    </div>
+</div >

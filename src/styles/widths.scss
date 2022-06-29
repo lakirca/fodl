@@ -1,0 +1,13 @@
+@import './variables';
+
+.w-192 {
+    width: 48 * $spacer;
+}
+
+.w-288 {
+    width: 72 * $spacer;
+}
+
+.w-384 {
+    width: 96 * $spacer;
+}

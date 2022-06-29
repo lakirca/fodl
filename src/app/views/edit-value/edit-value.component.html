@@ -1,0 +1,8 @@
+<div
+    *ngIf="foldingService.error$ | async"
+    class="text-4xl w-full text-center my-40"
+>
+    {{ foldingService.error$ | async }}
+</div>
+
+<app-position [position]="position$ | async" edit="value"></app-position>

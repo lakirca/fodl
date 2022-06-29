@@ -1,0 +1,9 @@
+@import '../../../styles/colors';
+@import '../../../styles/variables';
+
+.markets {
+    &__header {
+        top: 25 * $spacer;
+        background-color: $background-color;
+    }
+}

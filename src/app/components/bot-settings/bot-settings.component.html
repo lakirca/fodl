@@ -1,0 +1,298 @@
+<div mat-dialog-content class="app-bot-settings">
+    <div class="app-bot-settings__position-info mb-4">
+        <div class="grid grid-cols-11">
+            <div class="col-span-3 flex items-center text-sm">Asset Pair</div>
+
+            <div class="col-span-2 flex justify-center items-center text-sm">
+                Position Value
+            </div>
+
+            <div class="col-span-2 flex justify-center items-center text-sm">
+                Leverage
+            </div>
+
+            <div class="col-span-2 flex justify-center items-center text-sm">
+                Borrow Limit
+            </div>
+
+            <div class="col-span-2 flex justify-center items-center text-sm">
+                {{ position.supplyMarket.assetSymbol }} APR
+            </div>
+
+            <div class="col-span-11 my-1"></div>
+
+            <div class="col-span-3 flex items-center">
+                <app-icon-pair-platform
+                    [supplyAsset]="position.supplyMarket.assetAddress"
+                    [supplyAssetName]="position.supplyMarket.assetSymbol"
+                    [borrowAsset]="position.borrowMarket.assetAddress"
+                    [borrowAssetName]="position.borrowMarket.assetSymbol"
+                    [platformName]="position.supplyMarket.platform.name"
+                ></app-icon-pair-platform>
+            </div>
+
+            <div
+                class="
+                    col-span-2
+                    text-2xl
+                    font-light
+                    flex flex-col
+                    justify-center
+                    items-center
+                "
+            >
+                {{ position.positionValue | formatValue: ' ' }}
+
+                <span class="text-xs font-bold"
+                    >~{{ position.positionValueUsd | formatValue: '$' }}</span
+                >
+            </div>
+
+            <div
+                class="
+                    col-span-2
+                    text-2xl
+                    font-light
+                    flex
+                    justify-center
+                    items-center
+                "
+            >
+                x{{ position.leverage | formatValue }}
+            </div>
+
+            <div class="col-span-2 flex justify-center items-center">
+                <div class="block h-12 w-20 overflow-hidden relative">
+                    <mwl-gauge
+                        *ngIf="position.positionValueUsd > 5"
+                        class="flex w-full mx-auto"
+                        [class.warn]="
+                            position.collateralUsageFactor >= 70 &&
+                            position.collateralUsageFactor < 90
+                        "
+                        [class.alert]="position.collateralUsageFactor > 90"
+                        [max]="100"
+                        [dialStartAngle]="180"
+                        [dialEndAngle]="0"
+                        [value]="position.collateralUsageFactor"
+                        [showValue]="false"
+                    >
+                    </mwl-gauge>
+
+                    <span
+                        *ngIf="position.positionValueUsd > 5"
+                        class="gauge-value"
+                        [class.warn]="
+                            position.collateralUsageFactor >= 70 &&
+                            position.collateralUsageFactor < 90
+                        "
+                        [class.alert]="position.collateralUsageFactor > 90"
+                    >
+                        {{ position.collateralUsageFactor | number: '1.0-0' }}%
+                    </span>
+                </div>
+            </div>
+
+            <div
+                class="
+                    col-span-2
+                    text-2xl
+                    font-light
+                    flex
+                    justify-center
+                    items-center
+                "
+            >
+                {{ getApr() | formatValue }}%
+            </div>
+        </div>
+    </div>
+
+    <div class="app-bot-settings__section mb-4">
+        <div class="app-bot-settings__section-header">
+            Price Target
+
+            <span class="ml-2 text-sm cursor-pointer has-tooltip">
+                <mat-icon class="small">info_outline</mat-icon>
+
+                <div class="tooltip top-right w-80">
+                    Price of {{ position.supplyMarket.assetSymbol }} in
+                    {{ position.borrowMarket.assetSymbol }} at which the bot
+                    should take the action, assuming no interest.
+                </div>
+            </span>
+        </div>
+
+        <div class="app-bot-settings__section-content">
+            <div class="app-input app-bot-settings__input w-full mr-2">
+                <input
+                    matInput
+                    type="number"
+                    class="text-primary"
+                    [(ngModel)]="priceTarget"
+                    (change)="limitPriceTarget()"
+                />
+            </div>
+        </div>
+    </div>
+
+    <div class="app-bot-settings__section mb-4">
+        <div class="app-bot-settings__section-header">
+            Fixed Reward
+
+            <span class="ml-2 text-sm cursor-pointer has-tooltip">
+                <mat-icon class="small">info_outline</mat-icon>
+
+                <div class="tooltip top-right w-80">
+                    Fixed reward given to the bot.
+                </div>
+            </span>
+        </div>
+
+        <div class="app-bot-settings__section-content">
+            <div class="app-input app-bot-settings__input w-full mr-2">
+                <input
+                    matInput
+                    type="number"
+                    class="text-primary"
+                    [(ngModel)]="fixedReward"
+                    (change)="limitFixedReward()"
+                />
+            </div>
+        </div>
+    </div>
+
+    <div class="app-bot-settings__section mb-4">
+        <div class="app-bot-settings__section-header">
+            Percentage Reward
+
+            <span class="ml-2 text-sm cursor-pointer has-tooltip">
+                <mat-icon class="small">info_outline</mat-icon>
+
+                <div class="tooltip top-right w-80">
+                    Percentage of borrow repayment that bot is incentivised
+                    with.
+                </div>
+            </span>
+        </div>
+
+        <div class="app-bot-settings__section-content">
+            <span class="block w-32 mr-2 text-2xl text-center text-primary"
+                >{{ percentageReward }}%</span
+            >
+
+            <mat-slider
+                class="w-full"
+                [(value)]="percentageReward"
+                (change)="limitPriceTarget()"
+                [min]="0"
+                max="100"
+                step=".01"
+            ></mat-slider>
+        </div>
+    </div>
+
+    <div class="app-bot-settings__section mb-4">
+        <div class="app-bot-settings__section-header">
+            Unwind Factor
+
+            <span class="ml-2 text-sm cursor-pointer has-tooltip">
+                <mat-icon class="small">info_outline</mat-icon>
+
+                <div class="tooltip right w-80">
+                    Percentage by which your position will be decreased when the
+                    action is triggered.
+                </div>
+            </span>
+        </div>
+
+        <div class="app-bot-settings__section-content">
+            <span class="block w-32 mr-2 text-2xl text-center text-primary"
+                >{{ unwindFactor }}%</span
+            >
+
+            <mat-slider
+                class="w-full"
+                [(value)]="unwindFactor"
+                (change)="limitPriceTarget()"
+                min="1"
+                max="100"
+                step=".01"
+            ></mat-slider>
+        </div>
+    </div>
+
+    <div class="app-bot-settings__footer">
+        <span class="text-red-400 flex justify-center items-center mb-6"
+            ><mat-icon class="mr-4">warning</mat-icon> Please note that the bot
+            is triggered based on borrow limit, not fixed price.<br />
+            The borrow limit is also affected by the owed/accrued
+            {{ position.supplyMarket.assetSymbol }} interest.</span
+        >
+
+        <div class="app-bot-settings__section mb-8">
+            <div class="app-bot-settings__section-long-header">
+                Action Type:
+            </div>
+
+            <div class="app-bot-settings__section-header justify-end">
+                {{ isTakeProfit ? 'Take Profit' : 'Stop Loss' }}
+            </div>
+        </div>
+
+        <div class="app-bot-settings__section mb-8">
+            <div class="app-bot-settings__section-long-header">
+                Position value after stop loss ({{
+                    position.supplyMarket.assetSymbol
+                }}):
+            </div>
+
+            <div
+                class="app-bot-settings__section-header justify-end"
+                [class.color-alert]="getPositionValueLeft() <= 0"
+            >
+                {{
+                    getPositionValueLeft()
+                        | formatValue: position.supplyMarket.assetSymbol
+                }}
+            </div>
+        </div>
+
+        <div class="app-bot-settings__section mb-8">
+            <div class="app-bot-settings__section-long-header">
+                Tip given to the bot ({{ position.supplyMarket.assetSymbol }}):
+            </div>
+
+            <div
+                class="app-bot-settings__section-header justify-end"
+                [class.color-alert]="getTipForTheBot() <= 0"
+            >
+                {{
+                    getTipForTheBot()
+                        | formatValue: position.supplyMarket.assetSymbol
+                }}
+            </div>
+        </div>
+
+        <div class="app-bot-settings__section">
+            <div class="app-bot-settings__section-long-header">
+                Leverage after stop loss:
+            </div>
+
+            <div
+                class="app-bot-settings__section-header justify-end"
+                [class.color-alert]="getLeverageAfterStopLoss() <= 0"
+            >
+                {{ getLeverageAfterStopLoss() | formatValue }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div mat-dialog-actions class="justify-center no-space">
+    <button mat-button class="secondary mr-2" (click)="getAllPNLSettings()">
+        Reset
+    </button>
+
+    <button mat-button class="primary" (click)="save()">Save</button>
+</div>

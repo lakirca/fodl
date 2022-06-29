@@ -1,0 +1,474 @@
+<div
+    *ngIf="
+        ethereumService.connected$ &&
+        ((positionsLoading$ | async) ||
+            (foldingService.positions$ | async).length)
+    "
+    class="app-positions-list bordered-block mb-16"
+>
+    <div class="py-16" *ngIf="positionsLoading$ | async">
+        <mat-progress-spinner
+            class="mx-auto my-8"
+            color="accent"
+            mode="indeterminate"
+        ></mat-progress-spinner>
+    </div>
+
+    <div
+        *ngIf="
+            !(positionsLoading$ | async) &&
+            (foldingService.positions$ | async).length
+        "
+        class="grid"
+        [class.grid-cols-12]="ethereumService.isEthereumNetwork()"
+        [class.grid-cols-11]="!ethereumService.isEthereumNetwork()"
+    >
+        <div
+            class="app-positions-list__tile app-positions-list__tile--heading"
+            (click)="sortBy('platformAddress')"
+        >
+            Platform
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === 'platformAddress'"
+                >arrow_downward</mat-icon
+            >
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-platformAddress'"
+                >arrow_upward</mat-icon
+            >
+        </div>
+
+        <div
+            class="app-positions-list__tile app-positions-list__tile--heading"
+            (click)="sortBy('strategy')"
+        >
+            Strategy
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === 'strategy'"
+                >arrow_downward</mat-icon
+            >
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-strategy'"
+                >arrow_upward</mat-icon
+            >
+        </div>
+
+        <div
+            class="
+                app-positions-list__tile app-positions-list__tile--heading
+                col-span-2
+            "
+            (click)="sortBy('principalValueUsd')"
+        >
+            Principal Value
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === 'principalValueUsd'"
+                >arrow_upward</mat-icon
+            >
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-principalValueUsd'"
+                >arrow_downward</mat-icon
+            >
+        </div>
+
+        <div
+            class="
+                app-positions-list__tile app-positions-list__tile--heading
+                col-span-2
+            "
+            (click)="sortBy('positionValueUsd')"
+        >
+            Position Value
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === 'positionValueUsd'"
+                >arrow_upward</mat-icon
+            >
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-positionValueUsd'"
+                >arrow_downward</mat-icon
+            >
+        </div>
+
+        <div
+            class="app-positions-list__tile app-positions-list__tile--heading"
+            (click)="sortBy('pnl')"
+        >
+            P/L
+
+            <mat-icon
+                class="small flex ml-1"
+                *ngIf="(sortBy$ | async) === 'pnl'"
+                >arrow_upward</mat-icon
+            >
+
+            <mat-icon
+                class="small flex ml-1"
+                *ngIf="(sortBy$ | async) === '-pnl'"
+                >arrow_downward</mat-icon
+            >
+        </div>
+
+        <div
+            class="app-positions-list__tile app-positions-list__tile--heading"
+            (click)="sortBy('leverage')"
+        >
+            Leverage
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === 'leverage'"
+                >arrow_upward</mat-icon
+            >
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-leverage'"
+                >arrow_downward</mat-icon
+            >
+        </div>
+
+        <div
+            class="
+                app-positions-list__tile app-positions-list__tile--heading
+                col-span-2
+            "
+            (click)="sortBy('collateralUsageFactor')"
+        >
+            Borrow Limit
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === 'collateralUsageFactor'"
+                >arrow_downward</mat-icon
+            >
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-collateralUsageFactor'"
+                >arrow_upward</mat-icon
+            >
+        </div>
+
+        <div
+            class="app-positions-list__tile app-positions-list__tile--heading"
+            (click)="sortBy('apr')"
+        >
+            APR
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === 'apr'"
+                >arrow_upward</mat-icon
+            >
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === '-apr'"
+                >arrow_downward</mat-icon
+            >
+        </div>
+
+        <div
+            *ngIf="ethereumService.isEthereumNetwork()"
+            class="app-positions-list__tile app-positions-list__tile--heading"
+        >
+            Settings
+        </div>
+
+        <div
+            class="
+                app-positions-list__tile
+                bordered-block bordered-block--internal
+                col-span-12
+            "
+            [class.app-positions-list__tile--highlight]="
+                highlight === position || isPositionSelected(position)
+            "
+            (mouseenter)="highlight = position"
+            (mouseleave)="highlight = undefined"
+            *ngFor="let position of positionsPaginated$ | async"
+        >
+            <div
+                class="grid w-full"
+                [class.grid-cols-12]="ethereumService.isEthereumNetwork()"
+                [class.grid-cols-11]="!ethereumService.isEthereumNetwork()"
+            >
+                <div
+                    class="flex justify-center items-center"
+                    (click)="toggleSelect(position)"
+                >
+                    <app-icon-platform
+                        class="w-8 h-8"
+                        [platform]="position.platformAddress"
+                        [platformName]="position.platformAddress | platformName"
+                    ></app-icon-platform>
+                </div>
+
+                <div
+                    class="flex justify-center items-center"
+                    (click)="toggleSelect(position)"
+                >
+                    <app-icon-pair
+                        [asset1]="position.supplyTokenAddress"
+                        [assetName1]="position.supplyTokenAddress | assetSymbol"
+                        assetDescription1="Supply Token"
+                        [asset2]="position.borrowTokenAddress"
+                        [assetName2]="position.borrowTokenAddress | assetSymbol"
+                        assetDescription2="Borrow Token"
+                    ></app-icon-pair>
+                </div>
+
+                <div
+                    class="
+                        col-span-2
+                        flex
+                        justify-center
+                        items-center
+                        text-xl
+                        font-extralight
+                    "
+                    (click)="toggleSelect(position)"
+                >
+                    <app-icon-asset
+                        class="w-8 h-8 mr-4 flex items-center"
+                        [asset]="position.supplyTokenAddress"
+                        [assetName]="position.supplyTokenAddress | assetSymbol"
+                    ></app-icon-asset>
+
+                    <div class="flex flex-col items-center justify-center">
+                        {{
+                            position.principalValue
+                                | formatValue
+                                    : (position.supplyTokenAddress
+                                          | assetSymbol)
+                        }}
+
+                        <small class="text-xs font-bold"
+                            >~{{
+                                position.principalValueUsd | formatValue: '$'
+                            }}</small
+                        >
+                    </div>
+                </div>
+
+                <div
+                    class="
+                        col-span-2
+                        flex
+                        justify-center
+                        items-center
+                        text-xl
+                        font-extralight
+                    "
+                    (click)="toggleSelect(position)"
+                >
+                    <app-icon-asset
+                        class="w-8 h-8 mr-4 flex items-center"
+                        [asset]="position.supplyTokenAddress"
+                        [assetName]="position.supplyTokenAddress | assetSymbol"
+                    ></app-icon-asset>
+
+                    <div class="flex flex-col items-center justify-center">
+                        {{
+                            position.positionValue
+                                | formatValue
+                                    : (position.supplyTokenAddress
+                                          | assetSymbol)
+                        }}
+
+                        <small class="text-xs font-bold"
+                            >~{{
+                                position.positionValueUsd | formatValue: '$'
+                            }}</small
+                        >
+                    </div>
+                </div>
+
+                <div
+                    class="
+                        flex
+                        justify-center
+                        items-center
+                        text-2xl
+                        font-extralight
+                    "
+                    (click)="toggleSelect(position)"
+                >
+                    <span
+                        class="has-tooltip"
+                        *ngIf="position.positionValueUsd > 5"
+                    >
+                        {{
+                            (position.pnl || 0) + (position.rewardsPnl || 0)
+                                | formatValue
+                        }}%
+
+                        <div *ngIf="position.pnl" class="tooltip w-48">
+                            <div class="flex">
+                                <div class="w-32">
+                                    {{ position.supplyMarket.assetSymbol }}:
+                                </div>
+
+                                <div class="font-bold">
+                                    {{ position.pnl || 0 | formatValue }}%
+                                </div>
+                            </div>
+
+                            <div class="flex">
+                                <div class="w-32">
+                                    {{ position.supplyMarket.platform.name }}:
+                                </div>
+
+                                <div class="font-bold">
+                                    {{
+                                        position.rewardsPnl || 0 | formatValue
+                                    }}%
+                                </div>
+                            </div>
+                        </div>
+                    </span>
+                </div>
+
+                <div
+                    class="
+                        flex
+                        justify-center
+                        items-center
+                        text-2xl
+                        font-extralight
+                    "
+                    (click)="toggleSelect(position)"
+                >
+                    <span *ngIf="position.positionValueUsd > 5">
+                        x{{ position.leverage | formatValue }}
+                    </span>
+                </div>
+
+                <div
+                    class="col-span-2 block h-12 overflow-hidden relative"
+                    (click)="toggleSelect(position)"
+                >
+                    <mwl-gauge
+                        *ngIf="position.positionValueUsd > 5"
+                        class="flex w-20 mx-auto"
+                        [class.warn]="
+                            position.collateralUsageFactor >= 70 &&
+                            position.collateralUsageFactor < 90
+                        "
+                        [class.alert]="position.collateralUsageFactor > 90"
+                        [max]="100"
+                        [dialStartAngle]="180"
+                        [dialEndAngle]="0"
+                        [value]="position.collateralUsageFactor"
+                        [showValue]="false"
+                    >
+                    </mwl-gauge>
+
+                    <span
+                        *ngIf="position.positionValueUsd > 5"
+                        class="gauge-value"
+                        [class.warn]="
+                            position.collateralUsageFactor >= 70 &&
+                            position.collateralUsageFactor < 90
+                        "
+                        [class.alert]="position.collateralUsageFactor > 90"
+                    >
+                        {{ position.collateralUsageFactor | number: '1.0-0' }}%
+                    </span>
+                </div>
+
+                <div
+                    class="
+                        flex
+                        justify-center
+                        items-center
+                        text-2xl
+                        font-extralight
+                    "
+                    (click)="toggleSelect(position)"
+                >
+                    <span
+                        *ngIf="position.positionValueUsd > 5"
+                        class="has-tooltip"
+                    >
+                        {{ position.apr | formatValue }}%
+
+                        <div *ngIf="position.foldingMarket" class="tooltip">
+                            <app-apr-tooltip
+                                [foldingMarket]="position.foldingMarket"
+                                [leverage]="position.leverage"
+                            ></app-apr-tooltip>
+                        </div>
+                    </span>
+                </div>
+
+                <div
+                    *ngIf="ethereumService.isEthereumNetwork()"
+                    class="flex justify-center items-center"
+                >
+                    <button
+                        *ngIf="
+                            position.positionValueUsd > 5 &&
+                            position.borrowAmountUsd > 5
+                        "
+                        mat-icon-button
+                        class="!p-0"
+                        (click)="openPositionSettings(position)"
+                    >
+                        <mat-icon>settings</mat-icon>
+                    </button>
+                </div>
+
+                <div
+                    class="app-positions-list__extra-container"
+                    [class.col-span-12]="ethereumService.isEthereumNetwork()"
+                    [class.col-span-11]="!ethereumService.isEthereumNetwork()"
+                    [class.app-positions-list__extra-container--open]="
+                        isPositionSelected(position)
+                    "
+                >
+                    <app-position-form
+                        [position]="position"
+                    ></app-position-form>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="mt-2 pl-2 flex"
+            [class.col-span-12]="ethereumService.isEthereumNetwork()"
+            [class.col-span-11]="!ethereumService.isEthereumNetwork()"
+        >
+            <mat-checkbox
+                class="opacity-50"
+                [checked]="showClosed$ | async"
+                (change)="showClosed$.next(!showClosed$.getValue())"
+            >
+                Show Closed Positions
+            </mat-checkbox>
+
+            <div class="flex-grow"></div>
+
+            <app-paginator
+                *ngIf="(positions$ | async)?.length > 5"
+                [length]="(positions$ | async)?.length"
+                [page]="page$ | async"
+                (pageChange)="page$.next($event)"
+                [itemsPerPage]="itemsPerPage$ | async"
+                (itemsPerPageChange)="itemsPerPage$.next($event)"
+            ></app-paginator>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,107 @@
+<div class="bordered-block bordered-block--semi-transparent max-w-xl mx-auto">
+    <h1
+        class="text-3xl text-center my-6"
+        *ngIf="!(ethereumService.account$ | async)"
+    >
+        Please connect your wallet.
+    </h1>
+
+    <ng-container *ngIf="ethereumService.account$ | async">
+        <mat-progress-spinner
+            *ngIf="rewardsLoading$ | async"
+            class="mx-auto my-16"
+            color="accent"
+            mode="indeterminate"
+        ></mat-progress-spinner>
+
+        <h1
+            class="text-xl text-center my-6"
+            *ngIf="!(rewardsLoading$ | async) && !(rewards$ | async)?.length"
+        >
+            You don't have any FODL rewards to claim yet.
+        </h1>
+
+        <ng-container *ngIf="(rewards$ | async) && (total$ | async) > 0">
+            <div class="my-8 text-center text-2xl font-extralight">
+                Rewards Available:
+                <span class="font-extrabold">{{
+                    total$ | async | formatValue: ' '
+                }}</span>
+                FODL
+            </div>
+
+            <div class="app-input flex relative mt-12 mb-8 mx-8">
+                <input
+                    type="number"
+                    name="supplyAmount"
+                    class="py-2"
+                    placeholder="Enter Amount"
+                    [(ngModel)]="claimAmount"
+                    (ngModelChange)="simulateClaim()"
+                />
+
+                <small
+                    class="cursor-pointer absolute right-0 -top-6"
+                    (click)="setMax()"
+                    >Max: {{ total$ | async | formatValue: ' ' }} FODL</small
+                >
+            </div>
+
+            <div *ngIf="amountsReceived" class="flex justify-center text-lg">
+                <div class="w-48">Rewards to receive:</div>
+
+                <div class="w-48 text-right font-bold">
+                    {{ amountsReceived | formatValue: ' ' }}
+                </div>
+            </div>
+
+            <div *ngIf="totalTax" class="flex justify-center text-lg">
+                <div class="w-48">Early withdrawal fee:</div>
+
+                <div class="w-48 text-right font-bold">
+                    {{ totalTax | formatValue: ' ' }}
+
+                    <span
+                        [class.text-orange-400]="getTaxPercent() > 50"
+                        [class.text-red-400]="getTaxPercent() > 75"
+                    >
+                        ({{ getTaxPercent() | formatValue }}%)
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex justify-center m-8">
+                <button
+                    [disabled]="
+                        !claimAmount || claimAmount > (total$ | async) || error
+                    "
+                    mat-button
+                    class="w-full secondary"
+                    (click)="claim()"
+                >
+                    Claim
+                </button>
+            </div>
+
+            <div
+                *ngIf="error"
+                class="
+                    relative
+                    flex
+                    justify-center
+                    text-lg
+                    bg-red-400 bg-opacity-25
+                    p-4
+                    rounded-lg
+                    my-6
+                    mx-8
+                "
+            >
+                <mat-icon class="absolute top-4 left-4 text-red-400"
+                    >error</mat-icon
+                >
+                {{ error }}
+            </div>
+        </ng-container>
+    </ng-container>
+</div>

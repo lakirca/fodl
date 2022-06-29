@@ -1,0 +1,40 @@
+@import '../colors';
+@import '../variables';
+
+mwl-gauge {
+    .dial {
+        stroke: rgba(adjust-color($accent, $lightness: -25%), 0.4);
+        stroke-width: $spacer / 2;
+    }
+
+    .value {
+        stroke: $green;
+        stroke-width: $spacer / 2;
+    }
+}
+
+mwl-gauge.warn {
+    .value {
+        stroke: $yellow;
+    }
+}
+
+mwl-gauge.alert {
+    .value {
+        stroke: $errorRed;
+    }
+}
+
+.gauge-value {
+    @apply absolute text-sm text-center w-full top-6;
+
+    color: $green;
+}
+
+.gauge-value.warn {
+    color: $yellow;
+}
+
+.gauge-value.alert {
+    color: $errorRed;
+}

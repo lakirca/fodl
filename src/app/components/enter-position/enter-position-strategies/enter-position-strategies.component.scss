@@ -1,0 +1,30 @@
+@import '../../../../styles/colors';
+@import '../../../../styles/variables';
+@import '../../../../styles/components/bordered-block';
+
+.app-strategies {
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-top-color: $border-color-light;
+
+    &__tile {
+        @apply m-1 py-4 p-0 cursor-pointer flex justify-center;
+
+        &--heading {
+            @apply font-bold px-2;
+        }
+
+        &--value {
+            @apply font-extralight text-4xl cursor-pointer;
+
+            small {
+                @apply block w-full font-normal text-white text-xs;
+            }
+        }
+
+        &--value:hover {
+            background: $block-internal-highlight-background;
+            border-color: $block-internal-highlight-background;
+        }
+    }
+}

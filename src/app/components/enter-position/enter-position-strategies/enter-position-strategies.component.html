@@ -1,0 +1,160 @@
+<div class="app-strategies">
+    <div class="text-center p-4 text-2xl">
+        Top Strategies
+        <ng-container
+            *ngIf="
+                (foldingService.strategy$ | async) === 'long' ||
+                (foldingService.strategy$ | async) === 'short'
+            "
+        >
+            <span class="block w-full text-center text-base">{{
+                marketAssumptionService.asLongString$ | async
+            }}</span>
+
+            <mat-slider
+                class="w-1/4"
+                [(value)]="marketAssumptionService.marketAssumption"
+                (valueChange)="marketAssumptionService.setValue($event)"
+                [max]="50"
+                [min]="10"
+                step="1"
+            ></mat-slider>
+        </ng-container>
+    </div>
+
+    <div
+        class="grid mb-8 mx-8"
+        [class.grid-cols-4]="maxLeverage >= 2 && maxLeverage < 3"
+        [class.grid-cols-5]="maxLeverage >= 3 && maxLeverage < 4"
+        [class.grid-cols-6]="maxLeverage >= 4"
+    >
+        <div
+            class="
+                bordered-block bordered-block--accent
+                app-strategies__tile app-strategies__tile--heading
+                col-span-3
+            "
+        >
+            Borrow Asset
+        </div>
+
+        <div
+            *ngIf="maxLeverage >= 2"
+            class="
+                bordered-block bordered-block--accent
+                app-strategies__tile app-strategies__tile--heading
+            "
+        >
+            x2 Leverage
+        </div>
+
+        <div
+            *ngIf="maxLeverage >= 3"
+            class="
+                bordered-block bordered-block--accent
+                app-strategies__tile app-strategies__tile--heading
+            "
+        >
+            x3 Leverage
+        </div>
+
+        <div
+            *ngIf="maxLeverage >= 4"
+            class="
+                bordered-block bordered-block--accent
+                app-strategies__tile app-strategies__tile--heading
+            "
+        >
+            x4 Leverage
+        </div>
+
+        <ng-container *ngFor="let market of markets$ | async">
+            <div
+                class="
+                    bordered-block bordered-block--accent
+                    app-strategies__tile
+                    col-span-3
+                "
+            >
+                <div class="flex justify-center items-center">
+                    <app-icon-asset
+                        class="w-8 mr-4 flex items-center"
+                        [asset]="market.assetAddress"
+                        [platform]="market.platform.address"
+                        [platformName]="market.platform.name"
+                    ></app-icon-asset>
+
+                    <span>{{ market.assetSymbol }}</span>
+
+                    <span class="w-48 text-center text-xs"
+                        >Liquidity:
+                        {{ market.totalLiquidity | formatValue }} ({{
+                            market.totalLiquidity * market.assetUsdValue
+                                | formatValue: '$'
+                        }})
+                    </span>
+                </div>
+            </div>
+
+            <div
+                *ngIf="maxLeverage >= 2"
+                class="
+                    bordered-block bordered-block--accent
+                    app-strategies__tile app-strategies__tile--value
+                    flex-col
+                    items-center
+                "
+                (click)="selectPreset(market, 2)"
+            >
+                {{
+                    getAprAgainst(market, 2) + (getAssumption(2) | async)
+                        | formatValue
+                }}%
+
+                <small class="text-center text-xs font-extralight opacity-60"
+                    >{{ getAprAgainst(market, 2) | formatValue }}%
+                </small>
+            </div>
+
+            <div
+                *ngIf="maxLeverage >= 3"
+                class="
+                    bordered-block bordered-block--accent
+                    app-strategies__tile app-strategies__tile--value
+                    flex-col
+                    items-center
+                "
+                (click)="selectPreset(market, 3)"
+            >
+                {{
+                    getAprAgainst(market, 3) + (getAssumption(3) | async)
+                        | formatValue
+                }}%
+
+                <small class="text-center text-xs font-extralight opacity-60"
+                    >{{ getAprAgainst(market, 3) | formatValue }}%
+                </small>
+            </div>
+
+            <div
+                *ngIf="maxLeverage >= 4"
+                class="
+                    bordered-block bordered-block--accent
+                    app-strategies__tile app-strategies__tile--value
+                    flex-col
+                    items-center
+                "
+                (click)="selectPreset(market, 4)"
+            >
+                {{
+                    getAprAgainst(market, 4) + (getAssumption(4) | async)
+                        | formatValue
+                }}%
+
+                <small class="text-center text-xs font-extralight opacity-60"
+                    >{{ getAprAgainst(market, 4) | formatValue }}%
+                </small>
+            </div>
+        </ng-container>
+    </div>
+</div>

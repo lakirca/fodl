@@ -1,0 +1,17 @@
+<div class="p-4 grid grid-cols-4">
+    <div class="m-2 relative overflow-hidden" *ngFor="let award of awards">
+        <img
+            [attr.src]="award.url"
+            loading="lazy"
+            class="object-cover aspect-square rounded-lg w-full"
+        />
+    </div>
+</div>
+
+<div class="mx-auto mb-6 w-72">
+    <img
+        [attr.src]="bayc.url"
+        loading="lazy"
+        class="object-cover aspect-square rounded-lg w-full"
+    />
+</div>

@@ -1,0 +1,25 @@
+<div class="app-input flex relative my-4">
+    <input
+        type="number"
+        name="supplyAmount"
+        class="py-2"
+        placeholder="Enter Amount"
+        [(ngModel)]="stakeAmount"
+        (ngModelChange)="limitMaxAmount()"
+    />
+
+    <small class="cursor-pointer absolute right-0 -top-6" (click)="setMax()"
+        >Max: {{ balance | formatValue }}</small
+    >
+</div>
+
+<div class="flex justify-center">
+    <button
+        [disabled]="!stakeAmount"
+        mat-button
+        class="secondary"
+        (click)="stake()"
+    >
+        Stake
+    </button>
+</div>

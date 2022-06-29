@@ -1,0 +1,181 @@
+<app-enter-position
+    *ngIf="
+        !!(foldingMarkets$ | async)?.length &&
+        !(marketsService.marketsLoading$ | async)
+    "
+    class="block my-16 sticky top-20 z-50"
+    [supplyMarket]="(selected$ | async)?.supplyMarket"
+    [borrowAsset]="(selected$ | async)?.borrowAsset"
+></app-enter-position>
+
+<div
+    *ngIf="
+        (marketsService.marketsLoading$ | async) ||
+        (foldingMarkets$ | async)?.length
+    "
+    class="bordered-block bordered-block--no-padding"
+>
+    <div class="py-16" *ngIf="marketsService.marketsLoading$ | async">
+        <mat-progress-spinner
+            class="mx-auto my-8"
+            color="accent"
+            mode="indeterminate"
+        ></mat-progress-spinner>
+    </div>
+
+    <div
+        *ngIf="
+            !!(foldingMarkets$ | async)?.length &&
+            !(marketsService.marketsLoading$ | async)
+        "
+        class="grid grid-cols-8 py-6 px-4 mx-4 sticky markets__header z-10"
+    >
+        <div
+            class="flex items-center justify-center cursor-pointer col-span-2"
+            (click)="sortBy('platform')"
+        >
+            Platform
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-platform'"
+            >
+                arrow_upward
+            </mat-icon>
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === 'platform'"
+            >
+                arrow_downward
+            </mat-icon>
+        </div>
+
+        <div
+            class="flex items-center justify-center cursor-pointer col-span-2"
+            (click)="sortBy('market')"
+        >
+            Assets Pair
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-market'"
+            >
+                arrow_upward
+            </mat-icon>
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === 'market'">
+                arrow_downward
+            </mat-icon>
+        </div>
+
+        <div
+            class="flex items-center justify-center cursor-pointer col-span-2"
+            (click)="sortBy('total')"
+        >
+            Total Value Locked
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === 'total'">
+                arrow_upward
+            </mat-icon>
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === '-total'">
+                arrow_downward
+            </mat-icon>
+        </div>
+
+        <div
+            class="flex items-center justify-center cursor-pointer col-span-2"
+            (click)="sortBy('apr')"
+        >
+            APR
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === 'apr'">
+                arrow_upward
+            </mat-icon>
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === '-apr'">
+                arrow_downward
+            </mat-icon>
+        </div>
+    </div>
+
+    <ng-container *ngIf="!(marketsService.marketsLoading$ | async)">
+        <div
+            *ngFor="let foldingMarket of foldingMarkets$ | async"
+            class="
+                bordered-block bordered-block--internal
+                grid grid-cols-8
+                mb-2
+                mx-4
+                cursor-pointer
+            "
+            [class.bordered-block--internal-highlight]="
+                foldingMarket === highlight
+            "
+            (click)="
+                selected$.next(foldingMarket);
+                foldingService.strategy$.next('everything')
+            "
+            (mouseenter)="highlight = foldingMarket"
+            (mouseleave)="highlight = undefined"
+        >
+            <div class="flex items-center justify-center col-span-2">
+                <app-icon-platform
+                    class="flex w-8 mr-4"
+                    [platformName]="foldingMarket.supplyMarket.platform.name"
+                ></app-icon-platform>
+
+                <div class="flex w-24">
+                    {{ foldingMarket.supplyMarket.platform.name }}
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center col-span-2">
+                <app-icon-pair
+                    [asset1]="foldingMarket.supplyMarket.assetAddress"
+                    [assetName1]="foldingMarket.supplyMarket.assetSymbol"
+                    assetDescription1="Supply Asset"
+                    [asset2]="foldingMarket.borrowAsset.asset.address"
+                    [assetName2]="foldingMarket.borrowAsset.asset.name"
+                    assetDescription2="Borrow Asset"
+                ></app-icon-pair>
+
+                <div class="flex ml-8 w-32">
+                    {{ foldingMarket.supplyMarket.assetSymbol }} /
+                    {{ foldingMarket.borrowAsset.asset.name }}
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center col-span-2">
+                {{
+                    foldingMarket.total
+                        ? (foldingMarket.total | formatValue: '$')
+                        : 'NEW!'
+                }}
+            </div>
+
+            <div class="flex items-center justify-center col-span-2">
+                <span
+                    *ngIf="foldingMarket.maxApr >= 0.01"
+                    class="has-tooltip cursor-pointer"
+                >
+                    {{
+                        (foldingMarket.totalValue ? foldingMarket.maxApr : 0) +
+                            foldingMarket.marketMaxApr +
+                            foldingMarket.marketMaxDistributionApr
+                            | formatValue
+                    }}%
+
+                    <div class="tooltip ">
+                        <app-apr-tooltip
+                            [foldingMarket]="foldingMarket"
+                        ></app-apr-tooltip>
+                    </div>
+                </span>
+            </div>
+        </div>
+    </ng-container>
+
+    <div class="block py-1"></div>
+</div>

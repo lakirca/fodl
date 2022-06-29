@@ -1,0 +1,194 @@
+<div class="flex my-8">
+    <div class="flex w-1/6 font-semibold text-4xl">Trading Strategies</div>
+
+    <div class="flex w-4/6 justify-center items-end">
+        <mat-button-toggle-group
+            class="max-h-14"
+            *ngIf="ethereumService.isEthereumNetwork()"
+            [(ngModel)]="platform"
+            (ngModelChange)="platformChanged()"
+        >
+            <mat-button-toggle value="all">All</mat-button-toggle>
+            <mat-button-toggle value="aave">Aave</mat-button-toggle>
+            <mat-button-toggle value="compound">Compound</mat-button-toggle>
+        </mat-button-toggle-group>
+    </div>
+
+    <div class="flex w-1/6 justify-end items-end">
+        <a [routerLink]="['/new-position']">
+            <app-new-position-button></app-new-position-button>
+        </a>
+    </div>
+</div>
+
+<div class="py-16" *ngIf="marketsService.marketsLoading$ | async">
+    <mat-progress-spinner
+        class="mx-auto my-8"
+        color="accent"
+        mode="indeterminate"
+    ></mat-progress-spinner>
+</div>
+
+<div
+    class="
+        bordered-block bordered-block--transparent bordered-block--no-padding
+    "
+    *ngIf="
+        (foldingMarkets$ | async)?.length &&
+        !(marketsService.marketsLoading$ | async)
+    "
+>
+    <div class="grid grid-cols-11 text-base opacity-50">
+        <div
+            class="flex items-center cursor-pointer col-span-3"
+            (click)="sortBy('market')"
+        >
+            Asset Pair
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-market'"
+            >
+                arrow_upward
+            </mat-icon>
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === 'market'">
+                arrow_downward
+            </mat-icon>
+        </div>
+
+        <div
+            class="flex items-center cursor-pointer col-span-2"
+            (click)="sortBy('maxLeverage')"
+        >
+            Max Leverage
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === 'maxLeverage'"
+            >
+                arrow_upward
+            </mat-icon>
+
+            <mat-icon
+                class="small ml-1"
+                *ngIf="(sortBy$ | async) === '-maxLeverage'"
+            >
+                arrow_downward
+            </mat-icon>
+        </div>
+
+        <div
+            class="flex items-center cursor-pointer col-span-3"
+            (click)="sortBy('apr')"
+        >
+            APR
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === 'apr'">
+                arrow_upward
+            </mat-icon>
+
+            <mat-icon class="small ml-1" *ngIf="(sortBy$ | async) === '-apr'">
+                arrow_downward
+            </mat-icon>
+        </div>
+
+        <div class="flex col-span-3"></div>
+    </div>
+
+    <div
+        *ngFor="let foldingMarket of foldingMarkets$ | async"
+        class="bordered-block bordered-block--internal grid grid-cols-11 my-4"
+    >
+        <div class="flex items-center pl-6 py-2 col-span-3">
+            <app-icon-pair-platform
+                [supplyAsset]="foldingMarket.supplyMarket.assetAddress"
+                [supplyAssetName]="foldingMarket.supplyMarket.assetSymbol"
+                [borrowAsset]="foldingMarket.borrowAsset.asset.address"
+                [borrowAssetName]="foldingMarket.borrowAsset.asset.name"
+                [platformName]="foldingMarket.supplyMarket.platform.name"
+            ></app-icon-pair-platform>
+        </div>
+
+        <div class="flex items-center col-span-2 text-base">
+            {{ foldingMarket.maxLeverage | formatValue }}x
+        </div>
+
+        <div class="flex items-center col-span-3 text-base">
+            <span class="has-tooltip cursor-pointer flex-col">
+                <div class="flex mb-2">
+                    {{
+                        foldingMarket.maxApr +
+                            foldingMarket.marketMaxApr +
+                            foldingMarket.marketMaxDistributionApr
+                            | formatValue
+                    }}%
+                </div>
+
+                <div class="flex">
+                    <div class="flex pr-2 mr-2 border-r border-gray-600">
+                        <app-icon-platform
+                            class="flex w-4 mr-2"
+                            [platformName]="
+                                foldingMarket.supplyMarket.platform.name
+                            "
+                        ></app-icon-platform>
+
+                        {{
+                            foldingMarket.marketMaxDistributionApr
+                                | formatValue
+                        }}%
+                    </div>
+
+                    <div class="flex">
+                        <app-icon-platform
+                            class="flex w-4 mr-2"
+                            platformName="Fodl"
+                        ></app-icon-platform>
+
+                        {{ foldingMarket.maxApr | formatValue }}%
+                    </div>
+                </div>
+
+                <div class="tooltip">
+                    <app-apr-tooltip
+                        [foldingMarket]="foldingMarket"
+                        [leverage]="foldingMarket.maxLeverage"
+                    ></app-apr-tooltip>
+                </div>
+            </span>
+        </div>
+
+        <div class="flex items-center justify-end col-span-3">
+            <div class="w-full mx-2">
+                <a
+                    [routerLink]="[
+                        '/new-position',
+                        {
+                            platform:
+                                foldingMarket.supplyMarket.platform.address,
+                            supplyAsset:
+                                foldingMarket.supplyMarket.assetAddress,
+                            borrowAsset:
+                                foldingMarket.borrowAsset.asset.address,
+                            leverage: foldingMarket.defaultLeverage
+                        }
+                    ]"
+                >
+                    <button mat-flat-button class="primary w-full">
+                        {{ getCallToAction(foldingMarket) }}
+                    </button>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="block pb-1"></div>
+</div>
+
+<div
+    *ngIf="foldingService.error$ | async"
+    class="text-4xl w-full text-center my-40"
+>
+    {{ foldingService.error$ | async }}
+</div>
